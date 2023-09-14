@@ -38,10 +38,13 @@ async function do_send(form) {
 		method: form.method,
 		body: fl,
 	});
+	var reader = resp.body.getReader();
 	var accum = "";
 	var state = "start";
-	for await (const chunk of resp.body) {
-		accum += dec.decode(chunk, {stream: true});
+	while(true) {
+		const {value, done} = await reader.read();
+		if(done) break;
+		accum += dec.decode(value, {stream: true});
 		var ix = accum.indexOf("\n");
 		if(ix != -1) {
 			var word = accum.substring(0, ix);
